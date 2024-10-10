@@ -1,0 +1,10 @@
+name: gene-prediction
+channels:
+  - nodefaults
+  - conda-forge
+dependencies:
+  - python
+  - pytest 
+  - pylint 
+  - pytest-cov
+  - pip
