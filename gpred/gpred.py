@@ -154,8 +154,13 @@ def has_shine_dalgarno(shine_regex: Pattern,
     return match is not None
 
 
-def predict_genes(sequence: str, start_regex: Pattern, stop_regex: Pattern, shine_regex: Pattern, 
-                  min_gene_len: int, max_shine_dalgarno_distance: int, min_gap: int) -> List:
+def predict_genes(sequence: str,
+                  start_regex: Pattern,
+                  stop_regex: Pattern,
+                  shine_regex: Pattern, 
+                  min_gene_len: int,
+                  max_shine_dalgarno_distance: int,
+                  min_gap: int) -> List:
     """Predict most probable genes
 
     :param sequence: (str) Sequence from the genome.
@@ -163,65 +168,61 @@ def predict_genes(sequence: str, start_regex: Pattern, stop_regex: Pattern, shin
     :param stop_regexp: A regex object that identifies a stop codon.
     :param shine_regexp: A regex object that identifies a shine-dalgarno motif.
     :param min_gene_len: (int) Minimum gene length.
-    :param max_shine_dalgarno_distance: (int) Maximum distance of the shine dalgarno to the start position.
+    :param max_shine_dalgarno_distance: (int) Maximum distance of the shine 
+                                              dalgarno to the start position.
     :param min_gap: (int) Minimum distance between two genes.
     :return: (list) List of [start, stop] position of each predicted genes.
     """
     predicted_genes = []
     current_position = 0
-    sequence_length = len(sequence)
 
     # Loop until we have checked the entire sequence with enough gap
-    while sequence_length - current_position >= min_gap:
+    while len(sequence) - current_position >= min_gap:
         # Find the next start codon
         start_codon_pos = find_start(start_regex, 
                                      sequence, 
                                      current_position, 
-                                     sequence_length)
+                                     len(sequence))
+        if start_codon_pos is None:
+            break  # Stop search if no more start codons are found
+
+        # Find the corresponding stop codon
+        stop_codon_pos = find_stop(stop_regex, sequence, start_codon_pos)
         
-        if start_codon_pos is not None:
-            # Find the corresponding stop codon
-            stop_codon_pos = find_stop(stop_regex, sequence, start_codon_pos)
-            
-            if stop_codon_pos is not None:
-                # Check if the gene length meets the minimum requirement
-                # 3 nucleotides for the stop codon
-                gene_length = stop_codon_pos + 3 - start_codon_pos  
-                if gene_length >= min_gene_len:
-                    # Check for the Shine-Dalgarno sequence  
-                    # upstream of the start codon
-                    if has_shine_dalgarno(shine_regex, 
-                                          sequence, 
-                                          start_codon_pos, 
-                                          max_shine_dalgarno_distance):
-                        # A probable gene is identified, store its positions
-                        # Start from 1-based indexing
-                        predicted_genes.append([start_codon_pos + 1, 
-                                                stop_codon_pos + 3])  
-                        # Move the current position 
-                        # to after the stop codon + min_gap
-                        current_position = stop_codon_pos + 3 + min_gap
-                    else:
-                        # Move to the next position if Shine-Dalgarno not found
-                        current_position += 1
-                else:
-                    # If gene is too short, move to the next position
-                    current_position += 1
+        # Ensure the gene is long enough
+        if stop_codon_pos and (
+            stop_codon_pos - start_codon_pos >= min_gene_len
+            ):
+            # Check for the Shine-Dalgarno sequence upstream of the start codon
+            if has_shine_dalgarno(shine_regex, 
+                                  sequence, 
+                                  start_codon_pos,
+                                  max_shine_dalgarno_distance):
+                # A probable gene is identified, store its positions
+                predicted_genes.append(
+                    [
+                        start_codon_pos + 1, 
+                        stop_codon_pos + 3
+                    ]
+                    )
+                # Move the current position to after the stop codon + min_gap
+                current_position = stop_codon_pos + 3 + min_gap
             else:
-                # If no stop codon is found, move to the next position
+                # No Shine-Dalgarno found
                 current_position += 1
         else:
-            # If no start codon is found, stop the search
-            break
+            # No valid stop codon or gene is too short
+            current_position += 1
 
     return predicted_genes
 
 
-def write_genes_pos(predicted_genes_file: Path, probable_genes: List[List[int]]) -> None:
+def write_genes_pos(predicted_genes_file: Path,
+                    probable_genes: List[List[int]]) -> None:
     """Write list of gene positions.
 
     :param predicted_genes_file: (Path) Output file of gene positions.
-    :param probable_genes: List of [start, stop] position of each predicted genes.
+    :param probable_genes: List of [start, stop] position of predicted genes.
     """
     try:
         with predicted_genes_file.open("wt") as predict_genes:
@@ -230,7 +231,7 @@ def write_genes_pos(predicted_genes_file: Path, probable_genes: List[List[int]])
             predict_genes_writer.writerows(probable_genes)
     except IOError:
         sys.exit("Error cannot open {}".format(predicted_genes_file))
-        
+
 
 def fill(sequence: str) -> str:
     """Fill the sequence to 60 characters per line
@@ -241,15 +242,20 @@ def fill(sequence: str) -> str:
     return os.linesep.join(textwrap.wrap(sequence, width=60))
 
 
-def write_genes(fasta_file: Path, sequence: str, probable_genes: List[List[int]], sequence_rc: str, 
+def write_genes(fasta_file: Path,
+                sequence: str,
+                probable_genes: List[List[int]],
+                sequence_rc: str, 
                 probable_genes_comp: List[List[int]]):
     """Write gene sequence in fasta format
 
     :param fasta_file: (Path) Output fasta file.
     :param sequence: (str) Sequence of genome file in 5'->3'.
-    :param probable_genes: (list) List of [start, stop] position of each predicted genes in 5'->3'.
+    :param probable_genes: (list) List of [start, stop] position of each 
+                                  predicted genes in 5'->3'.
     :param sequence_rc: (str) Sequence of genome file in 3' -> 5'.
-    :param probable_genes_comp: (list)List of [start, stop] position of each predicted genes in 3' -> 5'.
+    :param probable_genes_comp: (list) List of [start, stop] position of 
+                                       each predicted genes in 3' -> 5'.
     """
     try:
         with open(fasta_file, "wt") as fasta:
@@ -285,8 +291,6 @@ def main() -> None: # pragma: no cover
     """
     
     # Gene detection over genome involves considering thymine instead of uracil
-    start_codons = ['TTG', 'CTG', 'ATT', 'ATG', 'GTG']
-    stop_codons = ['TAA', 'TAG', 'TGA']
     start_regex = re.compile('AT[TG]|[ATCG]TG')
     stop_regex = re.compile('TA[GA]|TGA')
     
