@@ -1,19 +1,20 @@
-# Gene prediction
+# Gene Prediction
 
+## Overview
 
-## Summary
+Genes are subsequences within transcripts that can be translated into proteins by ribosomes. They contain a reading frame made up of consecutive triplets, starting with an initiation codon (e.g., 'AUG', 'UUG', 'CUG', 'AUU', or 'GUG') and ending with a stop codon (either 'UAA', 'UAG', or 'UGA'). All codons must be in the same reading frame.
 
-Genes correspond to a subsequence of transcripts that can be translated into proteins by the ribosome. They have a reading frame consisting of consecutive triplets from an initiation codon ('AUG', 'UUG', 'CUG', 'AUU' or 'GUG') and a stop codon (UAA', 'UAG', or 'UGA'). These codons are in the same reading frame!
-We find upstream of the initiation codon a motif allowing the initiation of translation via the binding of the 16S subunit of ribosomal RNA: AGGAGGUAA called the Shine-Dalagarno sequence [\[Shine and Dalgarno 1973\]](https://www.sciencedirect.com/science/article/pii/0022283673905287). This motif is not necessarily in the same reading frame as the initiation codon and may be incomplete.
+Upstream of the initiation codon, there is typically a motif that aids in translation initiation by allowing the binding of the 16S ribosomal RNA subunit. This sequence, known as the Shine-Dalgarno sequence (AGGAGGUAA), helps position the ribosome correctly [\[Shine and Dalgarno, 1973\]](https://www.sciencedirect.com/science/article/pii/0022283673905287). It is worth noting that the Shine-Dalgarno motif doesn't necessarily have to be in the same reading frame as the initiation codon, and it may sometimes be incomplete.
 
 ![Gene Prediction](assets/gene-prediction.png)
 
-Few organisms currently benefit from experimentally verified annotation. Gene prediction, therefore, remains an important task for the automatic annotation of genomes. Multiple software and approaches exist for this [task](https://en.wikipedia.org/wiki/List_of_gene_prediction_software).
+While many organisms still lack experimentally verified genome annotations, gene prediction remains crucial for the automatic annotation of genomes. Several tools and methods are available for this task [\[List of gene prediction software\]](https://en.wikipedia.org/wiki/List_of_gene_prediction_software).
 
-We will develop a simple approach to predict prokaryotic genes based on detecting reading frames and the Shine-Dalgarno motif. The objective of this practical work will be to predict the genes of the reference genome of [Listeria monocytogenes EGD-e](https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/159/159660%7CListeria%20monocytogenes%20EGD-e/) (assembled and sequenced by the Institut Pasteur), which presents 2867 genes.
+In this project, we aim to develop a simple approach to predict prokaryotic genes by detecting reading frames and identifying the Shine-Dalgarno motif. Our objective is to predict genes for the reference genome of *Listeria monocytogenes* EGD-e (sequenced by the Institut Pasteur), which has 2,867 known genes. You can find the genome [here](https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/159/159660%7CListeria%20monocytogenes%20EGD-e/).
 
+## Usage Instructions
 
-## Basic usage
+To run the gene prediction script, use the following command:
 
 ```
 python3 gpred/gpred.py -i data/listeria.fna \
@@ -21,19 +22,20 @@ python3 gpred/gpred.py -i data/listeria.fna \
                        -o results/predicted_genes.fasta
 ```
 
-Available arguments:
+### Command-line Options:
+
 ```
-  -h, --help                      Show this help message and exit
-  -i GENOME_FILE                  Complete genome file in fasta format
-  -g MIN_GENE_LEN                 Minimum gene length to consider (default 50).
-  -s MAX_SHINE_DALGARNO_DISTANCE  Maximum distance from the start codon where to look for a Shine-Dalgarno motif (default 16)
-  -d MIN_GAP                      Minimum gap between two genes (shine box not included, default 40).
-  -p PREDICTED_GENES_FILE         Tabular file giving the position of predicted genes
-  -o FASTA_FILE                   Fasta file giving the sequence of predicted genes
+  -h, --help                      Show help message and exit
+  -i GENOME_FILE                  Complete genome file in FASTA format
+  -g MIN_GENE_LEN                 Minimum gene length to consider (default: 50)
+  -s MAX_SHINE_DALGARNO_DISTANCE  Max distance from start codon to search for Shine-Dalgarno motif (default: 16)
+  -d MIN_GAP                      Minimum gap between two genes (excluding Shine-Dalgarno box, default: 40)
+  -p PREDICTED_GENES_FILE         Output CSV file with predicted gene positions
+  -o FASTA_FILE                   Output FASTA file containing predicted gene sequences
 ```
 
 ## Example
 
-We can compare the result of gpred compared to [genome annotation](/data/position.csv) and [prodigal](https://github.com/hyattpd/Prodigal) [complete genes prediction](/data/prodigal.csv) using [jvenn tool](https://jvenn.toulouse.inra.fr/app/example.html):
+To compare the results of gpred with a reference genome annotation and predictions from the [Prodigal](https://github.com/hyattpd/Prodigal) gene prediction tool, you can visualize overlaps using a Venn diagram generated by the [jvenn tool](https://jvenn.toulouse.inra.fr/app/example.html):
 
-![Test](assets/venn_chart.png)
+![Comparison](assets/venn_chart.png)
