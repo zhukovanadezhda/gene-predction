@@ -26,7 +26,7 @@ conda activate gene-prediction
 First, clone the repository and navigate to the project folder:
 
 ```bash
-git clone git@github.com:yourusername/gene-prediction.git
+git clone git@github.com:zhukovanadezhda/gene-prediction.git
 cd gene-prediction
 ```
 
