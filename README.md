@@ -34,5 +34,5 @@ Available arguments:
 
 ## Example
 
-We can compair the result of gpred compaired to [genome annotation](/data/position.csv) and [prodigal](https://github.com/hyattpd/Prodigal) [complete genes prediction](/data/prodigal.csv):
+We can compair the result of gpred compaired to [genome annotation](/data/position.csv) and [prodigal](https://github.com/hyattpd/Prodigal) [complete genes prediction](/data/prodigal.csv) using [jvenn tool](https://jvenn.toulouse.inra.fr/app/example.html):
 ![Test](assets/venn_chart.png)
