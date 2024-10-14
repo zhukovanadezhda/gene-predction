@@ -16,7 +16,7 @@ We will develop a simple approach to predict prokaryotic genes based on the dete
 ## Basic usage
 
 ```
-python3 gpred/gpred.py -i data/listeria.fasta -p predicted_gene_positions.csv -o  predicted_genes.fasta 
+python3 gpred/gpred.py -i data/listeria.fna -p results/predicted_gene_positions.csv -o results/predicted_genes.fasta
 ```
 
 Available arguments:
